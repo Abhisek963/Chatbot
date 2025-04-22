@@ -1,372 +1,228 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+// DOM elements
+const chatBody = document.querySelector(".chat-body");
+const messageInput = document.querySelector(".message-input");
+const sendMessageButton = document.querySelector("#send-message");
+const fileInput = document.querySelector("#file-input");
+const fileUpload = document.querySelector(".file-upload");
+const fileCancel = document.querySelector("#file-cancel");
+const chatbotToggler = document.querySelector("#chatbot-toggle");
+const closeChatbot = document.querySelector("#close");
 
+// Camera elements
+const cameraContainer = document.getElementById("camera-container");
+const cameraStream = document.getElementById("camera-stream");
+const captureBtn = document.getElementById("capture-photo");
+const closeCameraBtn = document.getElementById("close-camera");
+const canvas = document.getElementById("capture-canvas");
+const cameraButton = document.querySelector(".material-symbols-outlined"); // camera icon
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Roboto Mono", monospace;
-  
-}
+// Gemini API setup
+const API_KEY = "AIzaSyCZvtdH5EBZCX4kZUQ4Epk582-GlKeGT2Q";
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
-body {
-  height: 100vh;
-  background: linear-gradient(to right, #000000, #14213d);
-}
-
-#chatbot-toggle{
-  position: fixed;
-  bottom: 30px;
-  right: 35px;
-  border: none;
-  height: 50px;
-  width: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 50%;
-  background-color: rgb(58, 58, 58);
-  transition: all 0.2s ease;
-}
-
-body.show-chatbot #chatbot-toggle{
-  transform: rotate(90deg);
-}
-
-#chatbot-toggle span{
-  color: #fff;
-  position: absolute;
-}
-
-body.show-chatbot #chatbot-toggle span:first-child,
-#chatbot-toggle span:last-child{
-  opacity: 0;
-}
-
-body.show-chatbot #chatbot-toggle span:last-child{
-  opacity: 1;
-}
-
-.chatbot-popup{
-  position: fixed;
-  right: 150px;
-  bottom: 70px;
-  width: 450px;
-  background-color: white;
-  overflow: hidden;
-  border-radius: 25px;
-  opacity: 0;
-  transform: scale(0.2);
-  transform-origin: bottom right;
-  pointer-events: none;
-  box-shadow: 0 0 128px 0 rgba(0,0,0,0.2), 0 32px 64px -48px rgba(0,0,0,0.5);
-  transform: all o.1s ease;
-}
-
-body.show-chatbot .chatbot-popup{
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1);
-}
-
-.chat-header{
-display: flex;
-align-items: center;
-background-color: #325f9a;
-padding: 20px 28px;
-justify-content: space-between;
-}
-
-.chat-header .header-info{
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.header-info .logo{
-  height: 40px;
-  width: 40px;
-  padding: 6px;
-  fill: #07020e;
-  background: #fff;
-  border-radius: 50%;
-}
-
-.header-info .logo-text{
-  color: #fff;
-  font-size: 1.31rem;
-  font-weight: 600;
-}
-
-.chat-header #close{
-  border: none;
-  color: #fff;
-  background: none;
-  height: 40px;
-  width: 40px;
-  font-size: 1.9rem;
-  margin-right: -15px;
-  padding-top: 3px;
-  cursor: pointer;
-  border-radius: 50%;
-  transition: 0.2s ease;
-}
-
-.chat-header #close:hover{
-  background: #285284;
-}
-
-.chat-body{
-  padding: 25px 22px;
-  display: flex;
-  gap: 20px;
-  height: 450px;
-  margin-bottom: 85px;
-  overflow-y: auto;
-  flex-direction: column;
-  scrollbar-width: thin;
-  scrollbar-color: grey transparent;
-}
-
-.chat-body .message{
-  display: flex;
-  gap: 11px;
-  align-items: center;
-}
-
-.chat-body .message .avatar{
-  height: 40px;
-  width: 40px;
-  padding: 6px;
-  fill: #fff;
-  flex-shrink: 0;
-  margin-bottom: 2px;
-  align-self: flex-end;
-  background: #2c8b9e;
-  border-radius: 50%;
-}
-
-.chat-body .user-message{
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.chat-body .message .message-text{
-  padding: 12px 17px;
-  max-width: 75%;
-  font-size: 0.95rem;
-  
-}
-.chat-body .bot-message.thinking .message-text{
-  padding: 2px 16px;
-}
-
-.chat-body .bot-message .message-text{
-  background: #f2f2f2;
-  border-radius: 13px 13px 13px 3px;
-}
-
-.chat-body .user-message .message-text{
-  color: #fff;
-  background: #0077b6;
-  border-radius: 13px 13px 3px 13px;
-}
-
-.chat-body .user-message .attachment{
-  width: 50%;
-  margin-top: -8px;
-  border-radius: 13px 3px 13px 13px;
-
-}
-
-.chat-body .bot-message .thinking-indicator{
-  display: flex;
-  gap: 3px;
-  padding-block: 10px;
-}
-
-.chat-body .bot-message .thinking-indicator .dot{
-  height: 7px;
-  width: 7px;
-  opacity: 0.7;
-  border-radius: 50%;
-  background-color: #000000;
-  animation: dotPlus 1.8s ease-in-out infinite;
-}
-
-.chat-body .bot-message .thinking-indicator .dot:nth-child(1){
-  animation-delay: 0.2s;
-}
-.chat-body .bot-message .thinking-indicator .dot:nth-child(2){
-  animation-delay: 0.4s;
-}
-.chat-body .bot-message .thinking-indicator .dot:nth-child(3){
-  animation-delay: 0.6s;
-}
-@keyframes dotPlus{
-  0%, 44%{
-    transform: translateY(0);
+// Data structure for storing message and image file
+const userData = {
+  message: null,
+  file: {
+    data: null,
+    mime_type: null
   }
-  28%{
-    opacity: 0.4;
-    transform: translateY(-5px);
+};
+
+// Store message history
+const chatHistory = [];
+const initialInputHeight = messageInput.scrollHeight;
+
+// Create a message bubble (user or bot)
+const createMessageElement = (content,...classes) => {
+  const div = document.createElement("div");
+  div.classList.add("message",...classes);
+  div.innerHTML=content;
+  return div;
+}
+
+// Generate Gemini API response
+const generateBotResponse = async (incomingMessageDiv) => {
+  const messageElement = incomingMessageDiv.querySelector(".message-text");
+
+  // Push user input into chat history
+  chatHistory.push({
+    role: "user",
+    parts: [{ text: userData.message }, ...(userData.file.data ? [{inline_data: userData.file}] : [])]
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: chatHistory
+    })
   }
-  44%{
-    opacity:0.2;
+
+  try {
+    const response = await fetch(API_URL, requestOptions);
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.error.message);
+
+    // Extract text response from Gemini
+    const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\**/g, "$1").trim();
+    messageElement.innerText = apiResponseText;
+
+    // Push bot response to chat history
+    chatHistory.push({
+      role: "model",
+      parts: [{ text: userData.message }]
+    });
+  } catch (error) {
+    console.log(error);
+    messageElement.innerText = error.message;
+    messageElement.style.color = "#ff0000";
+  } finally {
+    userData.file = {}; // Clear image after use
+    incomingMessageDiv.classList.remove("thinking");
+    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
   }
 }
 
-.chat-footer{
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background-color: #fff;
-  padding: 15px 22px 20px;
+// Handle user message send
+const handleOutgoingMessage = (e) => {
+  e.preventDefault();
+  userData.message = messageInput.value.trim();
+  messageInput.value = "";
+  fileUpload.classList.remove("file-uploaded");
+  messageInput.dispatchEvent(new Event("input"));
+
+  // Add outgoing message
+  const messageContent = `<div class="message-text"></div>
+             ${userData.file.data ?`<img src="data:${userData.file.mime_type};base64,${userData.file.data}" class="attachment" />` : ""}`;
+
+  const outgoingMessageDiv = createMessageElement(messageContent,"user-message");
+  outgoingMessageDiv.querySelector(".message-text").textContent = userData.message;
+  chatBody.appendChild(outgoingMessageDiv);
+  chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
+
+  // Create bot loading animation
+  setTimeout(() => {
+    const messageContent = `  <svg class="avatar" ...>...</svg>
+          <div class="message-text">
+           <div class="thinking-indicator">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+           </div>
+          </div>`;
+    
+    const incomingMessageDiv = createMessageElement(messageContent,"bot-message", "thinking");
+    chatBody.appendChild(incomingMessageDiv);
+    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
+
+    generateBotResponse(incomingMessageDiv);
+  }, 600);
 }
 
-.chat-footer .chat-form{
-  display: flex;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 32px;
-  outline: 1px solid #CCCCE5;
-}
-.chat-footer .chat-form:focus-within{
-  outline: 2px solid #5350C4;
-}
-.chat-form .message-input{
-  border: none;
-  outline: none;
-  height: 50px;
-  width: 100%;
-  resize: none;
-  max-height: 190px;
-  white-space: pre-line;
-  font-size: 0.95rem;
-  padding: 15px 0 15px 20px;
-  border-radius: inherit;
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
+// Send on Enter key (desktop only)
+messageInput.addEventListener("keydown", (e) => {
+  const userMessage = e.target.value.trim();
+  if(e.key === "Enter" && userMessage && !e.shiftKey && window.innerWidth > 768){
+    handleOutgoingMessage(e);
+  }
+});
 
-.chat-form .message-input:hover{
-  scrollbar-color: #ccccf5 transparent;
-}
+// Auto-resize input box
+messageInput.addEventListener("input", () => {
+  messageInput.style.height = `${initialInputHeight}px`;
+  messageInput.style.height = `${messageInput.scrollHeight}px`;
+  document.querySelector(".chat-form").style.borderRadius = 
+    messageInput.scrollHeight > initialInputHeight ? "15px" : "32px";
+})
 
-.chat-form .chat-controls{
-  display: flex;
-  height: 50px;
-  gap: 5px;
-  align-items: center;
-  align-self: flex-end;
-  padding-right: 7px;
+// Handle image upload
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+  if (!file) return;
 
-}
-.chat-form .chat-controls button{
-  height: 35px;
-  width: 35px;
-  font-size: 1.15rem;
-  border: none;
-  cursor: pointer;
-  color: #5d789a;
-  background-color: none;
-  border-radius: 50%;
-  transition: 0.3s ease;
-}
-.chat-form .chat-controls #send-message{
-  color: #fff;
-  display: none;
-  background-color: #5350C4;
-}
-.chat-form .message-input:valid~.chat-controls #send-message{
-  display: block;
-}
-.chat-form .chat-controls #send-message:hover{
-  background-color: #2b2a58;
-}
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    fileUpload.querySelector("img").src = e.target.result;
+    fileUpload.classList.add("file-uploaded");
 
-.chat-form .chat-controls button:hover{
-  background-color: #f1f1ff;
-}
- 
-.chat-form .file-upload{
-  height: 35px;
-  width: 35px;
-  position: relative;
-}
+    const base64String = e.target.result.split(",")[1];
 
-.chat-form .file-upload :where(img, button){
-  position: absolute;
-}
+    userData.file = {
+      data: base64String,
+      mime_type: file.type
+    }
 
-.chat-form .file-upload img{
-  display: none;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.chat-form .file-upload #file-cancel{
-  color: #ff0000;
-  background-color: #fff;
-}
-
-.chat-form .file-upload :where(img, #file-cancel),
-.chat-form .file-upload.file-uploaded #file-upload{
-  display: none;
-}
-
-.chat-form .file-upload.file-uploaded img,
-.chat-form .file-upload.file-uploaded:hover #file-cancel{
-  display: block;
-}
-
-@media (max-width: 520px){
-  #chatbot-toggle{
-    right: 20px;
-    bottom: 20px;
+    fileInput.value = "";
   }
 
-.chatbot-popup{
-  right: 0;
-  bottom: 0;
-  height: 100%;
-  border-radius: 0;
-  width: 100%;
-}
+  reader.readAsDataURL(file);
+});
 
-.chatbot-popup .chat-header{
-  padding: 12px 15px;
-}
+// Cancel image upload
+fileCancel.addEventListener("click", () => {
+  userData.file = {};
+  fileUpload.classList.remove("file-uploaded");
+});
 
-.chat-body{
-  height: calc(90% - 55px);
-  padding: 25px 15px;
-}
+// Send message on button click
+sendMessageButton.addEventListener("click", (e) => handleOutgoingMessage(e));
 
-.chat-footer{
-  padding: 10px 15px 15px;
-}
+// Trigger file input on click
+document.querySelector("#file-upload").addEventListener("click", () => fileInput.click());
 
-.chat-form .file-upload.file-uploaded #file-cancel{
-  opacity: 0;
-}
-}
+// Show/hide chatbot popup
+chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
+closeChatbot.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
 
 
-#camera-container {
-  width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-#camera-container video {
-  max-width: 100%;
-  max-height: 100%;
-  border-radius: 10px;
-}
+let mediaStream = null;
 
+// Open camera on icon click
+cameraButton.addEventListener("click", async () => {
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    cameraStream.srcObject = mediaStream;
+    cameraContainer.style.display = "block";
+    cameraContainer.style.pointerEvents = "auto";
+  } catch (err) {
+    alert("Camera access denied or not available.");
+    console.error(err);
+  }
+});
+
+// Capture photo and attach to chat
+captureBtn.addEventListener("click", () => {
+  const context = canvas.getContext("2d");
+  canvas.width = cameraStream.videoWidth;
+  canvas.height = cameraStream.videoHeight;
+  context.drawImage(cameraStream, 0, 0, canvas.width, canvas.height);
+
+  const imageDataUrl = canvas.toDataURL("image/png");
+  fileUpload.querySelector("img").src = imageDataUrl;
+  fileUpload.classList.add("file-uploaded");
+
+  userData.file = {
+    data: imageDataUrl.split(",")[1],
+    mime_type: "image/png"
+  };
+
+  stopCamera();
+  cameraContainer.style.display = "none";
+});
+
+// Close camera manually
+closeCameraBtn.addEventListener("click", () => {
+  stopCamera();
+  cameraContainer.style.display = "none";
+  cameraContainer.style.pointerEvents = "none"; 
+});
+
+// Stop the video stream
+function stopCamera() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+    mediaStream = null;
+  }
+}
