@@ -354,3 +354,19 @@ justify-content: space-between;
   opacity: 0;
 }
 }
+
+
+#camera-container {
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#camera-container video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 10px;
+}
+
