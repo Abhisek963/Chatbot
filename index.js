@@ -185,6 +185,7 @@ cameraButton.addEventListener("click", async () => {
     mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
     cameraStream.srcObject = mediaStream;
     cameraContainer.style.display = "block";
+    cameraContainer.style.pointerEvents = "auto";
   } catch (err) {
     alert("Camera access denied or not available.");
     console.error(err);
@@ -215,6 +216,7 @@ captureBtn.addEventListener("click", () => {
 closeCameraBtn.addEventListener("click", () => {
   stopCamera();
   cameraContainer.style.display = "none";
+  cameraContainer.style.pointerEvents = "none"; 
 });
 
 // Stop the video stream
