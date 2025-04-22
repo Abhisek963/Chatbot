@@ -47,6 +47,16 @@
   <textarea placeholder="ASK ANYTHING" class="message-input" required></textarea>
   <div class="chat-controls">
     <button  type="button" class="material-symbols-outlined">add_a_photo</button>
+     <!-- Camera Modal -->
+<div id="camera-container" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
+  <video id="camera-stream" autoplay playsinline style="max-width:90%; max-height:70%; border-radius:10px;"></video>
+  <canvas id="capture-canvas" style="display:none;"></canvas>
+  <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 20px;">
+    <button class="material-symbols-outlined" id="capture-photo" style="padding: 10px ; font-size: 16px; cursor: pointer;"> Camera</button>
+    <button  class="material-symbols-outlined" id="close-camera" style="padding: 10px ; font-size: 16px; cursor: pointer;">close</button>
+  </div>
+</div>
+
     <div class="file-upload">
       <input type="file" accept="images/*" id="file-input" hidden>
       <img src="#">
@@ -62,3 +72,4 @@
 <script src="index.js"></script>
 </body>
 </html>
+
